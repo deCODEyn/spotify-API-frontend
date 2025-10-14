@@ -1,22 +1,58 @@
-import { Loader } from "lucide-react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { DashboardLayout } from "./layouts/dashboard-layout";
+import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login-page";
 
 export default function App() {
+  const isAuthenticated = true;
+
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen items-center justify-center bg-spotify-black">
+      <div className="min-h-screen bg-spotify-black">
         <Routes>
           <Route element={<LoginPage />} path="/" />
+
           <Route
             element={
-              <div className="text-spotify-white">
-                <Loader className="animate-spin text-xl" />
-                <p>Processando o token de acesso...</p>
-              </div>
+              isAuthenticated ? (
+                <Navigate replace to="/home" />
+              ) : (
+                <div className="flex h-screen items-center justify-center text-spotify-white">
+                  <p>Processando o token de acesso...</p>
+                </div>
+              )
             }
             path="auth/callback"
           />
+
+          <Route element={<DashboardLayout />} path="/">
+            {isAuthenticated && (
+              <Route element={<Navigate replace to="/home" />} index />
+            )}
+
+            <Route element={<HomePage />} path="/home" />
+            <Route
+              element={
+                <h1 className="text-spotify-white">Página de Artistas</h1>
+              }
+              path="/artists"
+            />
+            <Route
+              element={
+                <h1 className="text-spotify-white">Página de Playlists</h1>
+              }
+              path="/playlists"
+            />
+            <Route
+              element={<h1 className="text-spotify-white">Página de Perfil</h1>}
+              path="/profile"
+            />
+
+            {/* Rotas não encontradas, redireciona para Home caso autenticado */}
+            {isAuthenticated && (
+              <Route element={<Navigate replace to="/home" />} path="*" />
+            )}
+          </Route>
         </Routes>
       </div>
     </BrowserRouter>
