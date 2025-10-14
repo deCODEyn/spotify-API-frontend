@@ -58,7 +58,7 @@ export function Sidebar() {
       </div>
       <div className="pb-4 pl-2 md:text-xl">
         <button
-          className="flex w-full items-center justify-center space-x-3 rounded-lg p-2 text-left transition duration-200 hover:bg-spotify-dark-gray md:justify-start"
+          className="flex w-full cursor-pointer items-center justify-center space-x-3 rounded-lg p-2 text-left transition duration-200 hover:bg-spotify-dark-gray md:justify-start"
           type="button"
         >
           <Download className="h-6 w-6 flex-shrink-0" />

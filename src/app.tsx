@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { DashboardLayout } from "./layouts/dashboard-layout";
 import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login-page";
+import ProfilePage from "./pages/profile";
 
 export default function App() {
   const isAuthenticated = true;
@@ -43,10 +44,7 @@ export default function App() {
               }
               path="/playlists"
             />
-            <Route
-              element={<h1 className="text-spotify-white">Página de Perfil</h1>}
-              path="/profile"
-            />
+            <Route element={<ProfilePage />} path="/profile" />
 
             {/* Rotas não encontradas, redireciona para Home caso autenticado */}
             {isAuthenticated && (

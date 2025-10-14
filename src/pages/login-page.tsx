@@ -1,4 +1,5 @@
 import spotifyLogo from "../assets/spotify-logo.svg";
+import { Button } from "../components/button";
 import { Image } from "../components/image";
 
 export function LoginPage() {
@@ -17,14 +18,7 @@ export function LoginPage() {
         <p className="text-lg text-spotify-white md:text-xl">
           Entra com sua conta Spotify clicando no botão abaixo
         </p>
-        <button
-          aria-label="Entrar com sua conta Spotify"
-          className="transform rounded-full bg-spotify-green px-12 py-2.5 font-bold text-lg text-spotify-black shadow-lg transition duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-spotify-green focus:ring-opacity-50"
-          onClick={handleLogin}
-          type="button"
-        >
-          Entrar
-        </button>
+        <Button onClickFn={handleLogin}>Entrar</Button>
       </div>
     </div>
   );
