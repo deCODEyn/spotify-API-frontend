@@ -1,4 +1,4 @@
-import { CircleDot, Download, HomeIcon, Play, User } from "lucide-react";
+import { Download, HomeIcon, Mic2, Play, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import spotifyLogo from "../../assets/spotify-logo.svg";
 import { Image } from "../image";
@@ -31,7 +31,7 @@ export function Sidebar() {
             }
             to="/artists"
           >
-            <CircleDot className="h-5 w-5 flex-shrink-0" />
+            <Mic2 className="h-5 w-5 flex-shrink-0" />
             <span className="hidden md:inline">Artistas</span>
           </NavLink>
 

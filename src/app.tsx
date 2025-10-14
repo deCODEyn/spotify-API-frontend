@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { DashboardLayout } from "./layouts/dashboard-layout";
+import { ArtistisPage } from "./pages/artists";
 import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login-page";
 import ProfilePage from "./pages/profile";
@@ -32,12 +33,7 @@ export default function App() {
             )}
 
             <Route element={<HomePage />} path="/home" />
-            <Route
-              element={
-                <h1 className="text-spotify-white">Página de Artistas</h1>
-              }
-              path="/artists"
-            />
+            <Route element={<ArtistisPage />} path="/artists" />
             <Route
               element={
                 <h1 className="text-spotify-white">Página de Playlists</h1>
