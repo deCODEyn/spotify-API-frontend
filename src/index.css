@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@theme {
+  --color-spotify-black: #090707;
+  --color-spotify-dark-gray: #181414;
+  --color-spotify-green: #57b660;
+  --color-spotify-white: #ffffff;
+}
