@@ -7,8 +7,8 @@ import { ArtistisPage } from "./pages/artists";
 import { CallbackPage } from "./pages/auth-callback";
 import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login-page";
-import PlaylistsPage from "./pages/playlists";
-import ProfilePage from "./pages/profile";
+import { PlaylistsPage } from "./pages/playlists";
+import { ProfilePage } from "./pages/profile";
 
 export default function App() {
   const { isAuthenticated } = useAuth();

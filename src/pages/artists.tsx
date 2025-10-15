@@ -1,18 +1,44 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Image } from "../components/image";
+import { getTopArtists } from "../http/api/artists";
 import type { Artist } from "../types/artist";
 
-const artists: Artist[] = [
-  {
-    id: "art1",
-    name: "Black Alien",
-    genres: ["Hip Hop", "Rap", "Brazilian"],
-    imageUrl: "https://via.placeholder.com/150/4B0082/FFFFFF?text=BA",
-    followers: 500_000,
-  },
-];
-
 export function ArtistisPage() {
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchArtists = async () => {
+      setError(null);
+      try {
+        const fetchedArtists = await getTopArtists();
+        setArtists(fetchedArtists);
+      } catch {
+        setError(
+          "Não foi possível carregar os artistas. Tente novamente mais tarde."
+        );
+      }
+    };
+    fetchArtists();
+  }, []);
+
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center p-4 text-red-500">
+        <p className="font-semibold text-xl">{error}</p>
+      </div>
+    );
+  }
+
+  if (artists.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center p-4 text-spotify-white">
+        <p className="text-xl">Você não tem nenhum artista para ser exibido.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <h1 className="mb-2 font-bold text-3xl text-spotify-white">
