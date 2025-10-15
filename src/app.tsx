@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "./context/auth-context";
 import { DashboardLayout } from "./layouts/dashboard-layout";
 import { ProtectedRoute } from "./layouts/protected-route";
 import { AlbumsPage } from "./pages/albums";
@@ -10,7 +11,7 @@ import PlaylistsPage from "./pages/playlists";
 import ProfilePage from "./pages/profile";
 
 export default function App() {
-  const isAuthenticated = true;
+  const { isAuthenticated } = useAuth();
 
   return (
     <BrowserRouter>

@@ -80,7 +80,6 @@ export function CallbackPage() {
         );
         return;
       }
-
       handleSetToken(code);
     };
     handleCallback();

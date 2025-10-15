@@ -29,5 +29,6 @@ export async function exchangeSpotifyCode(
 export async function getMe(): Promise<User> {
   const user = await api.get("auth/me").json<User>();
   userSchema.parse(user);
+
   return user;
 }
