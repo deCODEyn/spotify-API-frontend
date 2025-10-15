@@ -9,9 +9,7 @@ export function ProfilePage() {
   };
 
   const handleLogout = (): void => {
-    console.log(
-      "Usuário deslogado. Lógica de autenticação será implementada aqui."
-    );
+    //  "Usuário deslogado. Lógica de autenticação será implementada aqui."
   };
 
   return (

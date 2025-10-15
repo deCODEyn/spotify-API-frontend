@@ -4,9 +4,7 @@ import { Image } from "../components/image";
 
 export function LoginPage() {
   const handleLogin = (): void => {
-    console.log(
-      "Login iniciado. Esta função será conectada ao backend com uma função Hook."
-    );
+    //  "Login iniciado. Esta função será conectada ao backend com uma função Hook."
   };
 
   return (

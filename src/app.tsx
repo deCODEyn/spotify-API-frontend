@@ -4,6 +4,7 @@ import { AlbumsPage } from "./pages/albums";
 import { ArtistisPage } from "./pages/artists";
 import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login-page";
+import PlaylistsPage from "./pages/playlists";
 import ProfilePage from "./pages/profile";
 
 export default function App() {
@@ -39,12 +40,7 @@ export default function App() {
               element={<AlbumsPage />}
               path="/artists/:artistId/:artistName/albums"
             />
-            <Route
-              element={
-                <h1 className="text-spotify-white">Página de Playlists</h1>
-              }
-              path="/playlists"
-            />
+            <Route element={<PlaylistsPage />} path="/playlists" />
             <Route element={<ProfilePage />} path="/profile" />
 
             {/* Rotas não encontradas, redireciona para Home caso autenticado */}

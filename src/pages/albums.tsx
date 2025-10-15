@@ -1,64 +1,14 @@
 /** biome-ignore-all lint/style/noMagicNumbers: <dev> */
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AlbumCard } from "../components/album-card";
+import { BackButton } from "../components/back-button";
 import { Button } from "../components/button";
 import { Image } from "../components/image";
-import {
-  type Album,
-  type AlbumsApiResponse,
-  albumsApiResponseSchema,
-} from "../types/albums";
+import { fetchArtistAlbums, fetchArtistDetails } from "../hooks/mock-api";
+import { type Album, albumsApiResponseSchema } from "../types/albums";
 import type { Artist } from "../types/artist";
-
-const mockArtists: Artist[] = [
-  {
-    id: "art1",
-    name: "Black Alien",
-    imageUrl: "https://i.ibb.co/Jz5vX2h/black-alien-profile.jpg",
-    genres: ["POP"],
-    followers: 200_000,
-  },
-];
-
-export const fetchArtistDetails = async (
-  artistId: string
-): Promise<Artist | null> => {
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  return mockArtists.find((artist) => artist.id === artistId) || null;
-};
-
-export const fetchArtistAlbums = async (
-  artistId: string,
-  limit: number,
-  offset: number
-): Promise<AlbumsApiResponse> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
-  let allMockAlbums: Album[] = [];
-  if (artistId === "art1") {
-    allMockAlbums = Array.from({ length: 60 }, (_, i) => ({
-      id: `a${i + 1}`,
-      name: `Album ${i + 1}`,
-      imageUrl: `https://picsum.photos/id/${100 + i}/200/200`,
-      totalTracks: 8 + (i % 8),
-      releaseDate: `195${7 + Math.floor(i / 10)}-${(i % 12) + 1}-01`,
-    }));
-  } else {
-    allMockAlbums = [];
-  }
-
-  const totalMockedAlbums = allMockAlbums.length;
-  const paginatedAlbums = allMockAlbums.slice(offset, offset + limit);
-
-  return {
-    albums: paginatedAlbums,
-    total: totalMockedAlbums,
-    limit,
-    offset,
-  };
-};
 
 export function AlbumsPage() {
   const { artistId } = useParams<{ artistId: string }>();
@@ -150,14 +100,7 @@ export function AlbumsPage() {
   return (
     <div className="min-h-screen bg-spotify-black p-4">
       <div className="mb-8 flex items-center space-x-4">
-        <button
-          aria-label="Voltar"
-          className="text-spotify-white transition duration-200 hover:text-spotify-green"
-          onClick={() => navigate(-1)}
-          type="button"
-        >
-          <ArrowLeft className="h-8 w-8" />
-        </button>
+        <BackButton onClickFn={() => navigate(-1)} />
         {loadingArtist ? (
           <Loader2 className="animate-spin" />
         ) : (
