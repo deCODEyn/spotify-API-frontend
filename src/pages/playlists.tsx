@@ -2,16 +2,18 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
+import { CreatePlaylistModal } from "../components/create-playlist-modal";
 import { Image } from "../components/image";
 import { fetchUserPlaylists } from "../hooks/mock-api";
 import {
+  type CreatePlaylistBody,
   playlistsApiResponseSchema,
   type SimplifiedPlaylist,
 } from "../types/playlist";
 
 export function PlaylistsPage() {
   const navigate = useNavigate();
-
+  const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false);
   const [playlists, setPlaylists] = useState<SimplifiedPlaylist[]>([]);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const [currentOffset, setCurrentOffset] = useState(0);
@@ -20,11 +22,12 @@ export function PlaylistsPage() {
 
   const loadPlaylistsData = async (offsetToLoad: number) => {
     if (loadingPlaylists) {
+      navigate("/home");
       return;
     }
     setLoadingPlaylists(true);
     const response = await fetchUserPlaylists(limit, offsetToLoad);
-    playlistsApiResponseSchema.parse(response); // Valida com zod
+    playlistsApiResponseSchema.parse(response);
     setPlaylists(response.playlists);
     setCurrentOffset(offsetToLoad);
     setTotalPlaylists(response.total);
@@ -36,7 +39,6 @@ export function PlaylistsPage() {
     setCurrentOffset(0);
     setTotalPlaylists(-1);
     setLoadingPlaylists(false);
-
     loadPlaylistsData(0);
   }, []);
 
@@ -52,6 +54,11 @@ export function PlaylistsPage() {
     if (prevOffset >= 0 && !loadingPlaylists) {
       loadPlaylistsData(prevOffset);
     }
+  };
+
+  const handlePlaylistCreated = (newPlaylistData: CreatePlaylistBody) => {
+    console.log("Playlist criada (dados do formulário):", newPlaylistData);
+    loadPlaylistsData(0);
   };
 
   const isFirstPage = currentOffset === 0;
@@ -86,17 +93,11 @@ export function PlaylistsPage() {
         <Button
           aria-label="Criar nova playlist"
           className="ml-auto"
-          onClickFn={() => console.log("Criar nova playlist!")}
+          onClickFn={() => setShowCreatePlaylistModal(true)}
         >
           Criar playlist
         </Button>
       </div>
-
-      <h2 className="mb-6 text-spotify-white text-xl opacity-80">
-        Sua coleção pessoal de playlists (Total:{" "}
-        {totalPlaylists === -1 ? "..." : totalPlaylists})
-      </h2>
-
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1">
         {loadingPlaylists && playlists.length === 0 ? (
           <Loader2 className="animate-spin" />
@@ -150,6 +151,11 @@ export function PlaylistsPage() {
       </div>
 
       <div className="flex justify-center py-8">{message}</div>
+      <CreatePlaylistModal
+        isOpen={showCreatePlaylistModal}
+        onClose={() => setShowCreatePlaylistModal(false)}
+        onPlaylistCreated={handlePlaylistCreated}
+      />
     </div>
   );
 }

@@ -16,3 +16,10 @@ export const playlistsApiResponseSchema = z.object({
   offset: z.number(),
 });
 export type PlaylistsApiResponse = z.infer<typeof playlistsApiResponseSchema>;
+
+export const createPlaylistBodySchema = z.object({
+  name: z.string().min(1, "Name não pode ser vazio"),
+  description: z.string().optional(),
+  public: z.boolean().optional(),
+});
+export type CreatePlaylistBody = z.infer<typeof createPlaylistBodySchema>;
