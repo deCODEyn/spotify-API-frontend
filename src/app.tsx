@@ -3,13 +3,14 @@ import { DashboardLayout } from "./layouts/dashboard-layout";
 import { ProtectedRoute } from "./layouts/protected-route";
 import { AlbumsPage } from "./pages/albums";
 import { ArtistisPage } from "./pages/artists";
+import { CallbackPage } from "./pages/auth-callback";
 import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login-page";
 import PlaylistsPage from "./pages/playlists";
 import ProfilePage from "./pages/profile";
 
 export default function App() {
-  const isAuthenticated = false;
+  const isAuthenticated = true;
 
   return (
     <BrowserRouter>
@@ -17,18 +18,7 @@ export default function App() {
         <Routes>
           <Route element={<LoginPage />} path="/login" />
 
-          <Route
-            element={
-              isAuthenticated ? (
-                <Navigate replace to="/home" />
-              ) : (
-                <div className="flex h-screen items-center justify-center text-spotify-white">
-                  <p>Processando o token de acesso...</p>
-                </div>
-              )
-            }
-            path="auth/callback"
-          />
+          <Route element={<CallbackPage />} path="/auth/callback" />
 
           <Route
             element={
