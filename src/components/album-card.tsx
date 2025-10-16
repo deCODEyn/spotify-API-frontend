@@ -7,7 +7,7 @@ type AlbumCardProps = {
 
 export function AlbumCard({ album }: AlbumCardProps) {
   return (
-    <div className="cursor-pointer rounded-lg bg-spotify-dark-gray p-4 shadow-lg transition duration-200 hover:bg-spotify-dark-gray/70">
+    <div className="rounded-lg bg-spotify-dark-gray p-4 shadow-lg transition duration-200 hover:bg-spotify-dark-gray/70">
       <Image
         alt={`Capa do álbum ${album.name}`}
         className="mb-3 aspect-square w-full rounded object-cover shadow-md"

@@ -1,149 +1,170 @@
-/** biome-ignore-all lint/style/noMagicNumbers: <dev> */
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { AlbumCard } from "../components/album-card";
 import { BackButton } from "../components/back-button";
 import { Button } from "../components/button";
 import { Image } from "../components/image";
-import { fetchArtistAlbums, fetchArtistDetails } from "../hooks/mock-api";
-import { type Album, albumsApiResponseSchema } from "../types/albums";
+import { fetchArtistAlbumsFromApi } from "../http/api/albums";
+import type { Album, AlbumsApiResponse } from "../types/albums";
 import type { Artist } from "../types/artist";
+
+type LocationState = {
+  artist?: Artist;
+};
+
+const ALBUM_LIMIT = 10;
 
 export function AlbumsPage() {
   const { artistId } = useParams<{ artistId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LocationState;
+
   const [artist, setArtist] = useState<Artist | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loadingAlbums, setLoadingAlbums] = useState(false);
-  const [loadingArtist, setLoadingArtist] = useState(false);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [totalAlbums, setTotalAlbums] = useState(-1);
-  const limit = 10;
-
-  const loadArtistData = async () => {
-    if (!artistId) {
-      navigate("/artists");
-      return;
-    }
-    setLoadingArtist(true);
-    const fetchedArtist = await fetchArtistDetails(artistId);
-    setArtist(fetchedArtist);
-    setLoadingArtist(false);
-  };
-
-  const loadAlbumsData = async (offsetToLoad: number) => {
-    if (loadingAlbums || !artistId) {
-      navigate("/artists");
-      return;
-    }
-    setLoadingAlbums(true);
-    const response = await fetchArtistAlbums(artistId, limit, offsetToLoad);
-    albumsApiResponseSchema.parse(response);
-    setAlbums(response.albums);
-    setCurrentOffset(offsetToLoad);
-    setTotalAlbums(response.total);
-    setLoadingAlbums(false);
-  };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setAlbums([]);
-    setCurrentOffset(0);
-    setTotalAlbums(-1);
-    setLoadingAlbums(false);
-    setArtist(null);
-    setLoadingArtist(false);
-    loadArtistData();
-    loadAlbumsData(0);
-  }, []);
+    if (state?.artist && state.artist.id === artistId) {
+      setArtist(state.artist);
+      setAlbums([]);
+      setCurrentOffset(0);
+      setTotalAlbums(-1);
+    } else {
+      navigate("/artists");
+    }
+  }, [artistId, state?.artist, navigate]);
+
+  useEffect(() => {
+    let ignore = false;
+    const updateState = (response: AlbumsApiResponse) => {
+      if (ignore) {
+        return;
+      }
+      setAlbums(response.albums);
+      setTotalAlbums(response.total);
+    };
+    const handleError = () => {
+      if (ignore) {
+        return;
+      }
+      setError("Falha ao carregar álbuns do artista.");
+    };
+    const finishLoading = () => {
+      if (ignore) {
+        return;
+      }
+      setLoadingAlbums(false);
+    };
+    const loadAlbums = async () => {
+      if (!artistId) {
+        return;
+      }
+      setLoadingAlbums(true);
+
+      try {
+        const response = await fetchArtistAlbumsFromApi(
+          artistId,
+          ALBUM_LIMIT,
+          currentOffset
+        );
+        updateState(response);
+      } catch {
+        handleError();
+      } finally {
+        finishLoading();
+      }
+    };
+    loadAlbums();
+
+    return () => {
+      ignore = true;
+    };
+  }, [artistId, currentOffset]);
 
   const handleNextPage = () => {
-    const nextOffset = currentOffset + limit;
-    if (nextOffset < totalAlbums && !loadingAlbums) {
-      loadAlbumsData(nextOffset);
+    const nextOffset = currentOffset + ALBUM_LIMIT;
+    if (!loadingAlbums && nextOffset < totalAlbums) {
+      setCurrentOffset(nextOffset);
     }
   };
 
   const handlePrevPage = () => {
-    const prevOffset = currentOffset - limit;
-    if (prevOffset >= 0 && !loadingAlbums) {
-      loadAlbumsData(prevOffset);
+    const prevOffset = currentOffset - ALBUM_LIMIT;
+    if (!loadingAlbums && prevOffset >= 0) {
+      setCurrentOffset(prevOffset);
     }
   };
 
-  const displayArtistName = artist ? artist.name : "Artista Desconhecido";
-  const displayArtistImageUrl = artist
-    ? artist.imageUrl
-    : "https://via.placeholder.com/50/CCCCCC/000000?text=NA";
-
   const isFirstPage = currentOffset === 0;
-  const isLastPage = currentOffset + limit >= totalAlbums;
+  const isLastPage =
+    totalAlbums === -1 || currentOffset + ALBUM_LIMIT >= totalAlbums;
 
-  let message: React.ReactNode;
-  if (loadingArtist || (loadingAlbums && albums.length === 0)) {
-    message = (
-      <p className="animate-pulse text-lg text-spotify-green">Carregando...</p>
-    );
-  } else if (
-    albums.length === 0 &&
-    !loadingAlbums &&
-    totalAlbums !== -1 &&
-    totalAlbums === 0
-  ) {
-    message = (
-      <p className="text-lg text-spotify-white opacity-60">
-        Nenhum álbum encontrado para {displayArtistName}.
-      </p>
-    );
-  }
+  const shouldRenderLoader = loadingAlbums && albums.length === 0 && artistId;
+  const shouldRenderEmptyState =
+    !loadingAlbums && albums.length === 0 && totalAlbums === 0 && artistId;
 
   return (
     <div className="min-h-screen bg-spotify-black p-4">
       <div className="mb-8 flex items-center space-x-4">
         <BackButton onClickFn={() => navigate(-1)} />
-        {loadingArtist ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          <h1 className="font-bold text-3xl text-spotify-white">
-            {displayArtistName}
-          </h1>
-        )}
-        {artist && (
+        <h1 className="font-bold text-3xl text-spotify-white">
+          {artist?.name}
+        </h1>
+        {artist?.imageUrl && (
           <Image
-            alt={`Foto de perfil de ${displayArtistName}`}
+            alt={`Foto de perfil de ${artist?.name}`}
             className="ml-auto h-20 w-20 rounded-full border-2 border-spotify-green object-cover"
-            src={
-              displayArtistImageUrl ??
-              "https://via.placeholder.com/50/CCCCCC/000000?text=NA"
-            }
+            src={artist.imageUrl}
           />
         )}
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {loadingAlbums && albums.length === 0 ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          albums.map((album) => <AlbumCard album={album} key={album.id} />)
+
+      <div className="flex justify-center py-8">
+        {error && <p className="text-lg text-red-400">{error}</p>}
+
+        {shouldRenderLoader && (
+          <div className="flex flex-col items-center">
+            <Loader2 className="mb-2 h-10 w-10 animate-spin text-spotify-green" />
+            <p className="text-spotify-green">Carregando álbuns...</p>
+          </div>
+        )}
+
+        {shouldRenderEmptyState && (
+          <p className="text-lg text-spotify-white opacity-60">
+            Nenhum álbum encontrado para {artist?.name}.
+          </p>
         )}
       </div>
-      console.log({isFirstPage || loadingAlbums})
-      <div className="mt-8 flex justify-center space-x-4">
-        <Button
-          disabled={isFirstPage || loadingAlbums}
-          onClickFn={handlePrevPage}
-        >
-          Anterior
-        </Button>
-        <Button
-          disabled={isLastPage || loadingAlbums}
-          onClickFn={handleNextPage}
-        >
-          Próxima
-        </Button>
-      </div>
-      <div className="flex justify-center py-8">{message}</div>
+
+      {albums.length > 0 && (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {albums.map((album) => (
+            <AlbumCard album={album} key={album.id} />
+          ))}
+        </div>
+      )}
+
+      {totalAlbums > ALBUM_LIMIT && (
+        <div className="mt-8 flex justify-center space-x-4">
+          <Button
+            disabled={isFirstPage || loadingAlbums}
+            onClickFn={handlePrevPage}
+          >
+            Anterior
+          </Button>
+          <Button
+            disabled={isLastPage || loadingAlbums}
+            onClickFn={handleNextPage}
+          >
+            Próxima
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
-
-export default AlbumsPage;

@@ -53,6 +53,7 @@ export function ArtistisPage() {
           <Link
             className="flex cursor-pointer items-center space-x-4 rounded-lg bg-spotify-dark p-3"
             key={artist.id}
+            state={{ artist }}
             to={`/artists/${artist.id}/${encodeURIComponent(artist.name)}/albums`}
           >
             <Image
