@@ -247,7 +247,7 @@ A aplicação integra com o backend personalizado que consome a API do Spotify:
 ### 1. Clone o Repositório
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/deCODEyn/spotify-API-frontend.git
 cd spotify-API-frontend
 ```
 
