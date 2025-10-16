@@ -6,7 +6,7 @@ import { BackButton } from "../components/back-button";
 import { Button } from "../components/button";
 import { Image } from "../components/image";
 import { fetchArtistAlbumsFromApi } from "../http/api/albums";
-import type { Album, AlbumsApiResponse } from "../types/albums";
+import type { Album } from "../types/albums";
 import type { Artist } from "../types/artist";
 
 type LocationState = {
@@ -40,50 +40,26 @@ export function AlbumsPage() {
   }, [artistId, state?.artist, navigate]);
 
   useEffect(() => {
-    let ignore = false;
-    const updateState = (response: AlbumsApiResponse) => {
-      if (ignore) {
-        return;
-      }
-      setAlbums(response.albums);
-      setTotalAlbums(response.total);
-    };
-    const handleError = () => {
-      if (ignore) {
-        return;
-      }
-      setError("Falha ao carregar álbuns do artista.");
-    };
-    const finishLoading = () => {
-      if (ignore) {
-        return;
-      }
-      setLoadingAlbums(false);
-    };
     const loadAlbums = async () => {
       if (!artistId) {
         return;
       }
       setLoadingAlbums(true);
-
       try {
         const response = await fetchArtistAlbumsFromApi(
           artistId,
           ALBUM_LIMIT,
           currentOffset
         );
-        updateState(response);
+        setAlbums(response.albums);
+        setTotalAlbums(response.total);
       } catch {
-        handleError();
+        setError("Falha ao carregar álbuns do artista.");
       } finally {
-        finishLoading();
+        setLoadingAlbums(false);
       }
     };
     loadAlbums();
-
-    return () => {
-      ignore = true;
-    };
   }, [artistId, currentOffset]);
 
   const handleNextPage = () => {
