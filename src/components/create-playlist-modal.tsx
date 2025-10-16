@@ -1,17 +1,15 @@
 import { X } from "lucide-react";
-import type React from "react";
 import { useRef, useState } from "react";
 import { useClickOutside } from "../hooks/use-click-outside";
 import {
   type CreatePlaylistBody,
   createPlaylistBodySchema,
 } from "../types/playlist";
-import { Button } from "./button";
 
 type CreatePlaylistModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onPlaylistCreated: (newPlaylistData: CreatePlaylistBody) => void;
+  onPlaylistCreated: (newPlaylistData: CreatePlaylistBody) => Promise<void>;
 };
 
 export function CreatePlaylistModal({
@@ -22,6 +20,7 @@ export function CreatePlaylistModal({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   useClickOutside(modalContentRef, onClose);
 
@@ -29,19 +28,25 @@ export function CreatePlaylistModal({
     return null;
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError(null);
     const playlistData: CreatePlaylistBody = {
       name,
       description: description || undefined,
       public: isPublic,
     };
-    createPlaylistBodySchema.parse(playlistData);
-    onPlaylistCreated(playlistData);
-    onClose();
-    setName("");
-    setDescription("");
-    setIsPublic(false);
+    try {
+      createPlaylistBodySchema.parse(playlistData);
+      await onPlaylistCreated(playlistData);
+
+      setName("");
+      setDescription("");
+      setIsPublic(false);
+      onClose();
+    } catch {
+      setError("Falha ao criar playlist. Tente novamente.");
+    }
   };
 
   return (
@@ -106,13 +111,14 @@ export function CreatePlaylistModal({
               </span>
             </label>
           </div>
-          <Button
+          {error && <p className="mb-4 text-center text-red-400">{error}</p>}
+          <button
             aria-label="Criar playlist"
-            className="w-full"
-            onClickFn={() => handleSubmit}
+            className="w-full transform cursor-pointer rounded-full bg-spotify-green px-6 py-1 font-bold text-sm text-spotify-black shadow-lg transition duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-spotify-green focus:ring-opacity-50 sm:px-8 sm:text-lg md:px-12 md:py-2.5"
+            type="submit"
           >
             Criar
-          </Button>
+          </button>
         </form>
       </div>
     </div>

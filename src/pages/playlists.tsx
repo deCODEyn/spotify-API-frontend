@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "../components/button";
 import { CreatePlaylistModal } from "../components/create-playlist-modal";
 import { Image } from "../components/image";
-import { getUserPlaylists } from "../http/api/playlists";
+import { createPlaylist, getUserPlaylists } from "../http/api/playlists";
 import type { CreatePlaylistBody, SimplifiedPlaylist } from "../types/playlist";
 
 export function PlaylistsPage() {
@@ -24,10 +24,14 @@ export function PlaylistsPage() {
     fetchPlaylists();
   }, [fetchPlaylists]);
 
-  const handlePlaylistCreated = (_newPlaylistData: CreatePlaylistBody) => {
-    fetchPlaylists();
-    setShowCreatePlaylistModal(false);
-  };
+  const handlePlaylistCreated = useCallback(
+    async (playlistData: CreatePlaylistBody) => {
+      await createPlaylist(playlistData);
+      setShowCreatePlaylistModal(false);
+      await fetchPlaylists();
+    },
+    [fetchPlaylists]
+  );
 
   return (
     <div className="min-h-screen bg-spotify-black p-4">
@@ -62,7 +66,7 @@ export function PlaylistsPage() {
                 className="h-16 w-16 flex-shrink-0 rounded object-cover shadow-md"
                 src={
                   playlist.imageUrl ||
-                  "https://via.placeholder.com/150/CCCCCC/000000?text=No+Cover"
+                  "https://via.placeholder.com/50/CCCCCC/000000?text=NA"
                 }
               />
               <div className="flex-grow">
