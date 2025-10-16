@@ -1,0 +1,52 @@
+services:
+  spotify-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: spotify-frontend-prod
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - spotify-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.spotify-frontend.rule=Host(`spotify-frontend.local`)"
+      - "traefik.http.services.spotify-frontend.loadbalancer.server.port=8080"
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: spotify-nginx-proxy
+    ports:
+      - "443:443"
+      - "8080:80"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - spotify-frontend
+    restart: unless-stopped
+    networks:
+      - spotify-network
+    profiles:
+      - proxy
+
+networks:
+  spotify-network:
+    driver: bridge
+    name: spotify-network
+
+volumes:
+  nginx-cache:
+    driver: local
+  nginx-logs:
+    driver: local
