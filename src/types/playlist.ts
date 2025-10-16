@@ -9,12 +9,7 @@ export const simplifiedPlaylistSchema = z.object({
 });
 export type SimplifiedPlaylist = z.infer<typeof simplifiedPlaylistSchema>;
 
-export const playlistsApiResponseSchema = z.object({
-  playlists: z.array(simplifiedPlaylistSchema),
-  total: z.number(),
-  limit: z.number(),
-  offset: z.number(),
-});
+export const playlistsApiResponseSchema = z.array(simplifiedPlaylistSchema);
 export type PlaylistsApiResponse = z.infer<typeof playlistsApiResponseSchema>;
 
 export const createPlaylistBodySchema = z.object({

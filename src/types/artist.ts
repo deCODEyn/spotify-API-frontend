@@ -8,3 +8,6 @@ export const artistSchema = z.object({
   followers: z.number(),
 });
 export type Artist = z.infer<typeof artistSchema>;
+
+export const topArtistsResponseSchema = z.array(artistSchema);
+export type TopArtists = z.infer<typeof topArtistsResponseSchema>;

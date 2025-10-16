@@ -1,88 +1,33 @@
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "../components/button";
 import { CreatePlaylistModal } from "../components/create-playlist-modal";
 import { Image } from "../components/image";
-import { fetchUserPlaylists } from "../hooks/mock-api";
-import {
-  type CreatePlaylistBody,
-  playlistsApiResponseSchema,
-  type SimplifiedPlaylist,
-} from "../types/playlist";
+import { getUserPlaylists } from "../http/api/playlists";
+import type { CreatePlaylistBody, SimplifiedPlaylist } from "../types/playlist";
 
 export function PlaylistsPage() {
-  const navigate = useNavigate();
   const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false);
   const [playlists, setPlaylists] = useState<SimplifiedPlaylist[]>([]);
-  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
-  const [currentOffset, setCurrentOffset] = useState(0);
-  const [totalPlaylists, setTotalPlaylists] = useState(-1);
-  const limit = 10;
+  const [error, setError] = useState<string | null>(null);
 
-  const loadPlaylistsData = async (offsetToLoad: number) => {
-    if (loadingPlaylists) {
-      navigate("/home");
-      return;
+  const fetchPlaylists = useCallback(async () => {
+    setError(null);
+    try {
+      const response = await getUserPlaylists();
+      setPlaylists(response);
+    } catch {
+      setError("Erro ao carregar as playlists. Tente novamente mais tarde.");
     }
-    setLoadingPlaylists(true);
-    const response = await fetchUserPlaylists(limit, offsetToLoad);
-    playlistsApiResponseSchema.parse(response);
-    setPlaylists(response.playlists);
-    setCurrentOffset(offsetToLoad);
-    setTotalPlaylists(response.total);
-    setLoadingPlaylists(false);
-  };
-
-  useEffect(() => {
-    setPlaylists([]);
-    setCurrentOffset(0);
-    setTotalPlaylists(-1);
-    setLoadingPlaylists(false);
-    loadPlaylistsData(0);
   }, []);
 
-  const handleNextPage = () => {
-    const nextOffset = currentOffset + limit;
-    if (nextOffset < totalPlaylists && !loadingPlaylists) {
-      loadPlaylistsData(nextOffset);
-    }
+  useEffect(() => {
+    fetchPlaylists();
+  }, [fetchPlaylists]);
+
+  const handlePlaylistCreated = (_newPlaylistData: CreatePlaylistBody) => {
+    fetchPlaylists();
+    setShowCreatePlaylistModal(false);
   };
-
-  const handlePrevPage = () => {
-    const prevOffset = currentOffset - limit;
-    if (prevOffset >= 0 && !loadingPlaylists) {
-      loadPlaylistsData(prevOffset);
-    }
-  };
-
-  const handlePlaylistCreated = (newPlaylistData: CreatePlaylistBody) => {
-    console.log("Playlist criada (dados do formulário):", newPlaylistData);
-    loadPlaylistsData(0);
-  };
-
-  const isFirstPage = currentOffset === 0;
-  const isLastPage = currentOffset + limit >= totalPlaylists;
-
-  let message: React.ReactNode;
-  if (loadingPlaylists && playlists.length === 0) {
-    message = (
-      <p className="animate-pulse text-lg text-spotify-green">
-        Carregando playlists...
-      </p>
-    );
-  } else if (
-    playlists.length === 0 &&
-    !loadingPlaylists &&
-    totalPlaylists !== -1 &&
-    totalPlaylists === 0
-  ) {
-    message = (
-      <p className="text-lg text-spotify-white opacity-60">
-        Nenhuma playlist encontrada.
-      </p>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-spotify-black p-4">
@@ -99,9 +44,14 @@ export function PlaylistsPage() {
         </Button>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1">
-        {loadingPlaylists && playlists.length === 0 ? (
-          <Loader2 className="animate-spin" />
-        ) : (
+        {error && (
+          <div className="flex h-40 items-center justify-center">
+            <p className="text-lg text-red-400">{error}</p>
+          </div>
+        )}
+
+        {!error &&
+          playlists.length > 0 &&
           playlists.map((playlist) => (
             <div
               className="flex items-center space-x-4 rounded-lg border border-spotify-green p-4 shadow-lg transition duration-200"
@@ -129,28 +79,16 @@ export function PlaylistsPage() {
                 </div>
               </div>
             </div>
-          ))
+          ))}
+        {!error && playlists.length === 0 && (
+          <div className="flex h-40 items-center justify-center">
+            <p className="text-lg text-spotify-white opacity-60">
+              Nenhuma playlist encontrada.
+            </p>
+          </div>
         )}
       </div>
 
-      <div className="mt-8 flex justify-center space-x-4">
-        <Button
-          aria-label="Página anterior de playlists"
-          disabled={isFirstPage || loadingPlaylists}
-          onClickFn={handlePrevPage}
-        >
-          Anterior
-        </Button>
-        <Button
-          aria-label="Próxima página de playlists"
-          disabled={isLastPage || loadingPlaylists}
-          onClickFn={handleNextPage}
-        >
-          Próxima
-        </Button>
-      </div>
-
-      <div className="flex justify-center py-8">{message}</div>
       <CreatePlaylistModal
         isOpen={showCreatePlaylistModal}
         onClose={() => setShowCreatePlaylistModal(false)}
@@ -159,5 +97,3 @@ export function PlaylistsPage() {
     </div>
   );
 }
-
-export default PlaylistsPage;
